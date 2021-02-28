@@ -34,17 +34,20 @@ func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "创建新的文章")
+
+	err  := r.ParseForm()
+	if err != nil {
+		fmt.Fprint(w, "请输入正确的参数！")
+		return
+	}
+
+	title := r.PostForm.Get("title")
+
+	fmt.Fprintf(w, "postform is : %v<br>", r.PostForm)
+	fmt.Fprintf(w, "form is %v\n<br>", r.Form)
+	fmt.Fprintf(w, "title is %s\n<br>", title)
 }
 
-/*func forceHTMLMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 1. 设置标头
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		// 2. 继续处理请求
-		next.ServeHTTP(w, r)
-	})
-}*/
 func forceHTMLMiddleware(next http.Handler) http.Handler  {
 	return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-type", "text/html; charset=utf-8")
@@ -64,14 +67,39 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 	})
 }
 
+func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
+
+	html := `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>创建文章 —— 我的技术博客</title>
+</head>
+<body>
+    <form action="%s?test=data" method="post">
+        <p><input type="text" name="title"></p>
+        <p><textarea name="body" cols="30" rows="10"></textarea></p>
+        <p><button type="submit">提交</button></p>
+    </form>
+</body>
+</html>
+`
+	storeURL, _ := router.Get("articles.store").URL()
+	fmt.Fprintf(w, html, storeURL )
+
+}
+
+var router = mux.NewRouter().StrictSlash(true)
+
 func main() {
-	router := mux.NewRouter().StrictSlash(true)
 
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
 
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", articlesIndexHandler).Methods("GET").Name("articles.index")
+
+	router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
 	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
 
 	// 自定义 404 页面
