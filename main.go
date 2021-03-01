@@ -32,6 +32,16 @@ type Article struct {
 	ID int64
 }
 
+func (A Article) Link() string {
+	URL, err := router.Get("articles.show").URL("id", strconv.FormatInt(A.ID, 10))
+	if err != nil {
+		checkError(err)
+		return ""
+	}
+
+	return URL.String()
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>Hello, 欢迎来到 goblog！</h1>")
 }
@@ -71,7 +81,39 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "访问文章列表")
+
+	// 1. 执行查询语句，返回一个结果集
+	rows, err := db.Query("SELECT * FROM articles")
+	checkError(err)
+
+	defer rows.Close()
+
+	var articles []Article
+	//2. 循环读取结果
+	for rows.Next() {
+		var article Article
+		err = rows.Scan(&article.ID, &article.Title, &article.Body)
+		if err != nil {
+			checkError(err)
+		}
+		articles = append(articles, article)
+	}
+
+	// 2.3 检测遍历时是否发生错误
+	if err = rows.Err(); err != nil {
+		checkError(err)
+	}
+
+	// 3. 加载模板
+	tmpl, err := template.ParseFiles("resources/views/articles/index.tpl")
+	if err!= nil {
+		checkError(err)
+	}
+
+	// 4. 渲染模板，将所有文章的数据传输进去
+	tmpl.Execute(w, articles)
+
+
 }
 
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
@@ -147,7 +189,7 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 
-	tmpl, err := template.ParseFiles("resources/views/articles.create.tpl")
+	tmpl, err := template.ParseFiles("resources/views/articles/create.tpl")
 
 	if err != nil {
 		panic(err)
@@ -261,7 +303,6 @@ func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 			checkError(err)
 
 			tmpl.Execute(w, data)
-
 
 		}
 
