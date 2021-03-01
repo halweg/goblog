@@ -2,12 +2,20 @@ package main
 
 import (
 	"fmt"
+	"html/template"
 	"net/http"
+	"net/url"
 	"strings"
 	"unicode/utf8"
 
 	"github.com/gorilla/mux"
 )
+
+type ArticlesFormData struct {
+	Title, Body string
+	URL *url.URL
+	Errors map[string]string
+}
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>Hello, 欢迎来到 goblog！</h1>")
@@ -56,7 +64,36 @@ func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "title的内容输入合法：%v", title)
 		fmt.Fprintf(w, "body的内容输入合法: %v",  body)
 	} else {
-		fmt.Fprintf(w, "发生错误%v", errors)
+
+		/*storeURL, _ := router.Get("articles.store").URL()
+
+		data := ArticlesFormData{
+			Title:  title,
+			Body:   body,
+			URL:    storeURL,
+			Errors: errors,
+		}
+
+		tmpl, err := template.ParseFiles("resources/views/articles/create.tpl")
+		if err != nil {
+			panic(err)
+		}
+
+		tmpl.Execute(w, data)*/
+		storeURL, _ := router.Get("articles.store").URL()
+		data := ArticlesFormData{
+			Title: title,
+			Body: body,
+			URL: storeURL,
+			Errors: errors,
+		}
+
+		tmpl, e := template.ParseFiles("resources/views/articles/create.tpl")
+		if e != nil {
+			panic(e)
+		}
+
+		tmpl.Execute(w, data)
 	}
 }
 
@@ -73,7 +110,6 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 		if r.URL.Path != "/" {
 			r.URL.Path = strings.TrimSuffix(r.URL.Path, "/")
 		}
-
 		// 2. 将请求传递下去
 		next.ServeHTTP(w, r)
 	})
@@ -81,24 +117,21 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 
 func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 
-	html := `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>创建文章 —— 我的技术博客</title>
-</head>
-<body>
-    <form action="%s?test=data" method="post">
-        <p><input type="text" name="title"></p>
-        <p><textarea name="body" cols="30" rows="10"></textarea></p>
-        <p><button type="submit">提交</button></p>
-    </form>
-</body>
-</html>
-`
-	storeURL, _ := router.Get("articles.store").URL()
-	fmt.Fprintf(w, html, storeURL )
+	tmpl, err := template.ParseFiles("resources/views/articles.create.tpl")
 
+	if err != nil {
+		panic(err)
+	}
+	storeURL, _ := router.Get("articles.store").URL()
+
+	data := ArticlesFormData{
+		Title:  "",
+		Body:   "",
+		URL:    storeURL,
+		Errors: nil,
+	}
+
+	tmpl.Execute(w, data)
 }
 
 var router = mux.NewRouter().StrictSlash(true)
