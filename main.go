@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gorilla/mux"
 )
@@ -34,18 +35,29 @@ func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
+	title :=  r.FormValue("title")
+	body := r.FormValue("body")
 
-	err  := r.ParseForm()
-	if err != nil {
-		fmt.Fprint(w, "请输入正确的参数！")
-		return
+	errors := make(map[string]string)
+
+	if title == "" {
+		errors["title"] = "请输入正确的title内容！"
+	} else if utf8.RuneCountInString(title) < 3 || utf8.RuneCountInString(title) > 40 {
+		errors["title"] = "标题的长度应该在3-40个字符之间！"
 	}
 
-	title := r.PostForm.Get("title")
+	if body == "" {
+		errors["body"] = "请输入正确的body内容! "
+	} else if utf8.RuneCountInString(body) < 10 {
+		errors["body"] = "body的内容长度应该至少10位！"
+	}
 
-	fmt.Fprintf(w, "postform is : %v<br>", r.PostForm)
-	fmt.Fprintf(w, "form is %v\n<br>", r.Form)
-	fmt.Fprintf(w, "title is %s\n<br>", title)
+	if len(errors) == 0 {
+		fmt.Fprintf(w, "title的内容输入合法：%v", title)
+		fmt.Fprintf(w, "body的内容输入合法: %v",  body)
+	} else {
+		fmt.Fprintf(w, "发生错误%v", errors)
+	}
 }
 
 func forceHTMLMiddleware(next http.Handler) http.Handler  {
