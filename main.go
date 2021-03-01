@@ -22,6 +22,16 @@ type ArticlesFormData struct {
 	Errors map[string]string
 }
 
+/*type Article struct {
+	Title, Body string
+	ID          int64
+}*/
+
+type Article struct {
+	Title, Body string
+	ID int64
+}
+
 func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "<h1>Hello, 欢迎来到 goblog！</h1>")
 }
@@ -38,9 +48,34 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
+
+	// 1. 获取 URL 参数
 	vars := mux.Vars(r)
 	id := vars["id"]
-	fmt.Fprint(w, "文章 ID："+id)
+
+	// 2. 读取对应的文章数据
+	/*article := Article{}
+	query := "SELECT * FROM articles WHERE id = ?"
+	err := db.QueryRow(query, id).Scan(&article.ID, &article.Title, &article.Body)
+*/
+	article := &Article{}
+	query := "SELECT * FROM articles WHERE id = ?"
+	err := db.QueryRow(query, id).Scan(&article.ID, &article.Title, &article.Body)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "404 文章未找到")
+		} else {
+			checkError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "服务器内部错误!")
+		}
+	} else {
+		tmpl, err := template.ParseFiles("resources/views/articles/show.tpl")
+		checkError(err)
+		tmpl.Execute(w, article)
+	}
+
 }
 
 func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
