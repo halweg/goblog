@@ -1,11 +1,15 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	"html/template"
+	"log"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 	"unicode/utf8"
 
 	"github.com/gorilla/mux"
@@ -135,8 +139,40 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 var router = mux.NewRouter().StrictSlash(true)
+var db *sql.DB
+
+func initDB() {
+	var err error
+	config := mysql.Config{
+		User:                    "go_blog",
+		Passwd:                  "go_blog123",
+		Net:                     "tcp",
+		Addr:                    "127.0.0.1:3306",
+		DBName:                  "go_blog",
+		AllowNativePasswords:    true,
+	}
+
+	db, err := sql.Open("mysql", config.FormatDSN())
+	checkError(err)
+
+	db.SetMaxOpenConns(25)
+
+	db.SetConnMaxLifetime(5 * time.Minute)
+
+	db.SetMaxIdleConns(25)
+
+	err = db.Ping()
+	checkError(err)
+}
+
+func checkError(err error)  {
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func main() {
+	initDB()
 
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
