@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
+	"goblog/pkg/database"
 	"goblog/pkg/logger"
 	"goblog/pkg/types"
 	"goblog/route"
@@ -12,7 +12,6 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/gorilla/mux"
@@ -341,42 +340,6 @@ func validateArticleFormData(title string, body string) map[string]string {
 }
 
 var router *mux.Router
-var db *sql.DB
-
-func initDB() {
-	var err error
-	config := mysql.Config{
-		User:                    "go_blog",
-		Passwd:                  "go_blog123",
-		Net:                     "tcp",
-		Addr:                    "127.0.0.1:3306",
-		DBName:                  "go_blog",
-		AllowNativePasswords:    true,
-	}
-
-	db, err = sql.Open("mysql", config.FormatDSN())
-	logger.LogError(err)
-
-	db.SetMaxOpenConns(25)
-
-	db.SetConnMaxLifetime(5 * time.Minute)
-
-	db.SetMaxIdleConns(25)
-
-	err = db.Ping()
-	logger.LogError(err)
-}
-
-func createTables() {
-	createArticlesSQL := `CREATE TABLE IF NOT EXISTS articles(
-		id bigint(20) PRIMARY KEY AUTO_INCREMENT NOT NULL,
-		title varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-		body longtext COLLATE utf8mb4_unicode_ci
-	); `
-
-	_, err := db.Exec(createArticlesSQL)
-	logger.LogError(err)
-}
 
 func saveArticleToDB(title string, body string) (int64, error) {
 
@@ -445,10 +408,13 @@ func articlesDeleteHandler(w http.ResponseWriter, r *http.Request)  {
 
 }
 
+var db *sql.DB
 
 func main() {
-	initDB()
-	createTables()
+
+	database.Initialize()
+	db = database.DB
+
 	route.Initialize()
 	router = route.Router
 
