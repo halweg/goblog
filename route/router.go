@@ -2,6 +2,7 @@ package route
 
 import (
 	"github.com/gorilla/mux"
+	"goblog/pkg/logger"
 	"net/http"
 )
 
@@ -15,7 +16,7 @@ func Initialize() {
 func Name2URL(routeName string, pairs ...string) string {
 	URL, err := Router.Get(routeName).URL(pairs...)
 	if err != nil {
-		//checkError(err)
+		logger.LogError(err)
 		return ""
 	}
 	return URL.String()
