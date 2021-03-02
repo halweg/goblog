@@ -6,7 +6,7 @@ import (
 	"goblog/pkg/database"
 	"goblog/pkg/logger"
 	"goblog/pkg/types"
-	"goblog/route"
+	"goblog/routes"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -73,7 +73,7 @@ func notFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 
-	id := route.GetRouteVariable("id", r)
+	id := routes.GetRouteVariable("id", r)
 
 	article, err := getArticleByID(id)
 
@@ -89,7 +89,7 @@ func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		tmpl, err := template.New("show.tpl").Funcs(template.FuncMap{
 			"Int64ToString" : types.Int64ToString,
-			"RouteName2URL" : route.Name2URL,
+			"RouteName2URL" : routes.Name2URL,
 		}).ParseFiles("resources/views/articles/show.tpl")
 		logger.LogError(err)
 		tmpl.Execute(w, article)
@@ -224,7 +224,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
-	id := route.GetRouteVariable("id", r)
+	id := routes.GetRouteVariable("id", r)
 
 	article, err := getArticleByID(id)
 
@@ -263,7 +263,7 @@ func getArticleByID(id string) (Article, error) {
 
 func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. 获取 URL 参数
-	id := route.GetRouteVariable("id", r)
+	id := routes.GetRouteVariable("id", r)
 
 	// 2. 读取对应的文章数据
 	_, err := getArticleByID(id)
@@ -377,7 +377,7 @@ func saveArticleToDB(title string, body string) (int64, error) {
 
 func articlesDeleteHandler(w http.ResponseWriter, r *http.Request)  {
 
-	id :=  route.GetRouteVariable("id", r)
+	id :=  routes.GetRouteVariable("id", r)
 
 	article, err := getArticleByID(id)
 	if err != nil {
@@ -415,8 +415,8 @@ func main() {
 	database.Initialize()
 	db = database.DB
 
-	route.Initialize()
-	router = route.Router
+	routes.Initialize()
+	router = routes.Router
 
 	router.HandleFunc("/", homeHandler).Methods("GET").Name("home")
 	router.HandleFunc("/about", aboutHandler).Methods("GET").Name("about")
