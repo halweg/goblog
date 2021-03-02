@@ -3,10 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"goblog/bootstrap"
 	"goblog/pkg/database"
 	"goblog/pkg/logger"
-	"goblog/pkg/types"
-	"goblog/routes"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -54,32 +53,6 @@ func (a Article) Delete() (rowsAffected int64, err error) {
 	}
 
 	return 0, err
-}
-
-func articlesShowHandler(w http.ResponseWriter, r *http.Request) {
-
-	id := routes.GetRouteVariable("id", r)
-
-	article, err := getArticleByID(id)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, "404 文章未找到")
-		} else {
-			logger.LogError(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, "服务器内部错误!")
-		}
-	} else {
-		tmpl, err := template.New("show.tpl").Funcs(template.FuncMap{
-			"Int64ToString" : types.Int64ToString,
-			"RouteName2URL" : routes.Name2URL,
-		}).ParseFiles("resources/views/articles/show.tpl")
-		logger.LogError(err)
-		tmpl.Execute(w, article)
-	}
-
 }
 
 func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -209,7 +182,7 @@ func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
-	id := routes.GetRouteVariable("id", r)
+	id := getRouteVariable("id", r)
 
 	article, err := getArticleByID(id)
 
@@ -248,7 +221,7 @@ func getArticleByID(id string) (Article, error) {
 
 func articlesUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. 获取 URL 参数
-	id := routes.GetRouteVariable("id", r)
+	id := getRouteVariable("id", r)
 
 	// 2. 读取对应的文章数据
 	_, err := getArticleByID(id)
@@ -362,7 +335,7 @@ func saveArticleToDB(title string, body string) (int64, error) {
 
 func articlesDeleteHandler(w http.ResponseWriter, r *http.Request)  {
 
-	id :=  routes.GetRouteVariable("id", r)
+	id :=  getRouteVariable("id", r)
 
 	article, err := getArticleByID(id)
 	if err != nil {
@@ -393,6 +366,12 @@ func articlesDeleteHandler(w http.ResponseWriter, r *http.Request)  {
 
 }
 
+
+func getRouteVariable(parameterName string, r *http.Request) string {
+	vars := mux.Vars(r)
+	return vars[parameterName]
+}
+
 var db *sql.DB
 
 func main() {
@@ -400,11 +379,8 @@ func main() {
 	database.Initialize()
 	db = database.DB
 
-	routes.Initialize()
-	router = routes.Router
+	router = bootstrap.SetupRoute()
 
-
-	router.HandleFunc("/articles/{id:[0-9]+}", articlesShowHandler).Methods("GET").Name("articles.show")
 	router.HandleFunc("/articles", articlesIndexHandler).Methods("GET").Name("articles.index")
 
 	router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
