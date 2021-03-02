@@ -10,6 +10,7 @@ var Router *mux.Router
 
 func Initialize() {
 	Router = mux.NewRouter()
+	RegisterWebRouter(Router)
 }
 
 
