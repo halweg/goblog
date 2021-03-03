@@ -32,16 +32,6 @@ type Article struct {
 	ID int64
 }
 
-func (a Article) Link() string {
-	URL, err := router.Get("articles.show").URL("id", strconv.FormatInt(a.ID, 10))
-	if err != nil {
-		logger.LogError(err)
-		return ""
-	}
-
-	return URL.String()
-}
-
 func (a Article) Delete() (rowsAffected int64, err error) {
 	rs, err := db.Exec("DELETE FROM articles WHERE id = "+ strconv.FormatInt(a.ID, 10))
 	if err != nil {
@@ -55,93 +45,9 @@ func (a Article) Delete() (rowsAffected int64, err error) {
 	return 0, err
 }
 
-func articlesIndexHandler(w http.ResponseWriter, r *http.Request) {
-
-	// 1. 执行查询语句，返回一个结果集
-	rows, err := db.Query("SELECT * FROM articles")
-	logger.LogError(err)
-
-	defer rows.Close()
-
-	var articles []Article
-	//2. 循环读取结果
-	for rows.Next() {
-		var article Article
-		err = rows.Scan(&article.ID, &article.Title, &article.Body)
-		if err != nil {
-			logger.LogError(err)
-		}
-		articles = append(articles, article)
-	}
-
-	// 2.3 检测遍历时是否发生错误
-	if err = rows.Err(); err != nil {
-		logger.LogError(err)
-	}
-
-	// 3. 加载模板
-	tmpl, err := template.ParseFiles("resources/views/articles/index.tpl")
-	if err!= nil {
-		logger.LogError(err)
-	}
-
-	// 4. 渲染模板，将所有文章的数据传输进去
-	tmpl.Execute(w, articles)
-
-
-}
 
 func articlesStoreHandler(w http.ResponseWriter, r *http.Request) {
-	title :=  r.FormValue("title")
-	body := r.FormValue("body")
 
-	errors := validateArticleFormData(title, body)
-
-	if len(errors) == 0 {
-		fmt.Fprintf(w, "title的内容输入合法：%v", title)
-		fmt.Fprintf(w, "body的内容输入合法: %v",  body)
-
-		lastInsertId , err := saveArticleToDB(title, body)
-		if lastInsertId > 0 {
-			fmt.Fprintln(w, "数据库插入成功！,id为"+strconv.FormatInt(lastInsertId, 10))
-		} else {
-			logger.LogError(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w,  "500 服务器内部错误")
-		}
-
-	} else {
-
-		/*storeURL, _ := router.Get("articles.store").URL()
-
-		data := ArticlesFormData{
-			Title:  title,
-			Body:   body,
-			URL:    storeURL,
-			Errors: errors,
-		}
-
-		tmpl, err := template.ParseFiles("resources/views/articles/create.tpl")
-		if err != nil {
-			panic(err)
-		}
-
-		tmpl.Execute(w, data)*/
-		storeURL, _ := router.Get("articles.store").URL()
-		data := ArticlesFormData{
-			Title: title,
-			Body: body,
-			URL: storeURL,
-			Errors: errors,
-		}
-
-		tmpl, e := template.ParseFiles("resources/views/articles/create.tpl")
-		if e != nil {
-			panic(e)
-		}
-
-		tmpl.Execute(w, data)
-	}
 }
 
 func forceHTMLMiddleware(next http.Handler) http.Handler  {
@@ -160,25 +66,6 @@ func removeTrailingSlash(next http.Handler) http.Handler {
 		// 2. 将请求传递下去
 		next.ServeHTTP(w, r)
 	})
-}
-
-func articlesCreateHandler(w http.ResponseWriter, r *http.Request) {
-
-	tmpl, err := template.ParseFiles("resources/views/articles/create.tpl")
-
-	if err != nil {
-		panic(err)
-	}
-	storeURL, _ := router.Get("articles.store").URL()
-
-	data := ArticlesFormData{
-		Title:  "",
-		Body:   "",
-		URL:    storeURL,
-		Errors: nil,
-	}
-
-	tmpl.Execute(w, data)
 }
 
 func articlesEditHandler(w http.ResponseWriter, r *http.Request) {
@@ -382,10 +269,8 @@ func main() {
 	bootstrap.SetupDB()
 	router = bootstrap.SetupRoute()
 
-	router.HandleFunc("/articles", articlesIndexHandler).Methods("GET").Name("articles.index")
 
-	router.HandleFunc("/articles/create", articlesCreateHandler).Methods("GET").Name("articles.create")
-	router.HandleFunc("/articles", articlesStoreHandler).Methods("POST").Name("articles.store")
+
 	router.HandleFunc("/articles/{id:[0-9]+}/edit", articlesEditHandler).Methods("GET").Name("articles.edit")
 	router.HandleFunc("/articles/{id:[0-9]+}", articlesUpdateHandler).Methods("POST").Name("articles.update")
 
@@ -394,11 +279,6 @@ func main() {
 	// 中间件：强制内容类型为 HTML
 	router.Use(forceHTMLMiddleware)
 
-	// 通过命名路由获取 URL 示例
-	homeURL, _ := router.Get("home").URL()
-	fmt.Println("homeURL: ", homeURL)
-	articleURL, _ := router.Get("articles.show").URL("id", "1")
-	fmt.Println("articleURL: ", articleURL)
 
 	http.ListenAndServe(":3000", removeTrailingSlash(router))
 }

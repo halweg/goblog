@@ -42,7 +42,7 @@ func TestAllPage(t *testing.T)  {
 			resp, err = http.Get(baseURL+test.url)
 		}
 
-		assert.NoError(t, err, "请求"+test.url+"有错误发生，err不为空！")
+		assert.NoError(t, err, "请求"+test.method+test.url+"有错误发生，err不为空！")
 		assert.Equal(t, test.expected, resp.StatusCode, test.url+"应该返回状态码"+strconv.Itoa(test.expected))
 	}
 
