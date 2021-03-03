@@ -140,3 +140,92 @@ func (ac *ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 		tmpl.Execute(w, data)
 	}
 }
+
+func (ac *ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
+	id := route.GetRouteVariable("id", r)
+
+	article, err := article.Get(id)
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "文章未找到")
+		} else {
+			logger.LogError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "服务器内部错误")
+		}
+	} else {
+		updateURL := route.Name2URL("articles.update","id", id)
+
+		data := ArticlesFormData{
+			Title:  article.Title,
+			Body:   article.Body,
+			URL:    updateURL,
+			Errors: nil,
+		}
+
+		tmpl, err := template.ParseFiles("resources/views/articles/edit.tpl")
+		logger.LogError(err)
+		tmpl.Execute(w, data)
+
+	}
+}
+
+func (ac *ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
+	// 1. 获取 URL 参数
+	id := route.GetRouteVariable("id", r)
+
+	// 2. 读取对应的文章数据
+	_article, err := article.Get(id)
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "404 文章未找到")
+		} else {
+			logger.LogError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "服务器内部错误！")
+		}
+	} else {
+		_article.Title = r.PostFormValue("title")
+		_article.Body = r.PostFormValue("body")
+
+		errors := validateArticleFormData(_article.Title, _article.Body)
+
+		if len(errors) == 0 {
+			rowNum, err := _article.Update()
+			if err != nil {
+				logger.LogError(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprint(w, "服务器内部错误")
+			}
+
+			if  rowNum > 0 {
+				showURL := route.Name2URL("articles.show", "id", id)
+				http.Redirect(w, r, showURL, http.StatusFound)
+			} else {
+				fmt.Fprint(w, "你没有做任何修改！")
+			}
+
+		} else {
+
+			updateURL := route.Name2URL("articles.update", "id", id)
+
+			data := ArticlesFormData{
+				Title:  _article.Title,
+				Body:   _article.Body,
+				URL:    updateURL,
+				Errors: errors,
+			}
+
+			tmpl, err := template.ParseFiles("resources/views/articles/edit.tpl")
+			logger.LogError(err)
+
+			tmpl.Execute(w, data)
+
+		}
+
+	}
+}
