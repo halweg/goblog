@@ -69,8 +69,6 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 
 	articles, err := article.GetAll()
-	fmt.Println("文章数据：", articles)
-
 	if err != nil {
 
 		logger.LogError(err)
@@ -228,4 +226,37 @@ func (ac *ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 		}
 
 	}
+}
+
+func (ac *ArticlesController) Delete(w http.ResponseWriter, r *http.Request) {
+	id :=  route.GetRouteVariable("id", r)
+
+	article, err := article.Get(id)
+
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "文章未找到")
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "服务器内部错误")
+		}
+	} else {
+		n, err := article.Delete()
+		if err != nil {
+			logger.LogError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "500 服务器内部错误")
+		}
+
+		if n > 0 {
+			indexURL := route.Name2URL("articles.index")
+			http.Redirect(w, r, indexURL, http.StatusFound)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "404 文章未找到")
+		}
+
+	}
+
 }
