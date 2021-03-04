@@ -17,7 +17,7 @@
     <div class="p-4 bg-white rounded shadow-sm mb-3">
         <h5>作者</h5>
         <ol class="list-unstyled mb-0">
-            <li><a href="#">Summer</a></li>
+            <li><a href="#">halweg</a></li>
             <li><a href="#">Aufree</a></li>
             <li><a href="#">Monkey</a></li>
         </ol>

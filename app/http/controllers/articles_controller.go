@@ -57,12 +57,25 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "服务器内部错误!")
 		}
 	} else {
-		tmpl, err := template.New("show.tpl").Funcs(template.FuncMap{
-			"Int64ToString" : types.Int64ToString,
-			"RouteName2URL" : route.Name2URL,
-		}).ParseFiles("resources/views/articles/show.tpl")
+
+		viewDir := "resources/views"
+
+		flies, err := filepath.Glob(viewDir+"/layouts/*.tpl")
+		if err != nil {
+			logger.LogError(err)
+		}
+
+		newFlies := append(flies, viewDir+"/articles/show.tpl")
+
+		tmpl, err := template.New("show.tpl").
+			Funcs(template.FuncMap{
+				"RouteName2URL": route.Name2URL,
+				"Int64ToString": types.Int64ToString,
+			}).ParseFiles(newFlies...)
 		logger.LogError(err)
-		tmpl.Execute(w, article)
+
+		tmpl.ExecuteTemplate(w, "app", article)
+
 	}
 
 }

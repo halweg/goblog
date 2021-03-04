@@ -17,7 +17,7 @@ func(p *PagesController) NotFoundHandler(w http.ResponseWriter, r *http.Request)
 
 func(p *PagesController) AboutHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "此博客是用以记录编程笔记，如您有反馈或建议，请联系 "+
-		"<a href=\"mailto:summer@example.com\">summer@example.com</a>")
+		"<a href=\"mailto:halweg@example.com\">halweg@example.com</a>")
 }
 
 func(p *PagesController) HomeHandler(w http.ResponseWriter, r *http.Request) {
