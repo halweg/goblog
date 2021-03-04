@@ -19,7 +19,7 @@ func TestAllPage(t *testing.T)  {
 	 	{"/", "GET", 200},
 	 	{"/about", "GET", 200},
 	 	{"/notfound", "GET", 404},
-	 	{"/articles/1", "GET", 200},
+	 	{"/articles/2", "GET", 200},
 	 	{"/articles", "GET", 200},
 	 	{"/articles/create", "GET", 200},
 	 	{"/articles", "POST", 200},
