@@ -2,6 +2,7 @@ package model
 
 import (
 	"goblog/pkg/logger"
+	"goblog/pkg/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -22,4 +23,13 @@ func ConnectDB() *gorm.DB {
 
 	return DB
 	
+}
+
+type BaseModel struct {
+	ID uint64
+}
+
+// GetStringID 获取 ID 的字符串格式
+func (a BaseModel) GetStringID() string {
+	return types.Uint64ToString(a.ID)
 }

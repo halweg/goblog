@@ -5,12 +5,10 @@ import (
 	"goblog/app/models/article"
 	"goblog/pkg/logger"
 	"goblog/pkg/route"
-	"goblog/pkg/types"
+	"goblog/pkg/view"
 	"gorm.io/gorm"
 	"html/template"
 	"net/http"
-	"path/filepath"
-	"strconv"
 	"unicode/utf8"
 )
 
@@ -58,23 +56,7 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 
-		viewDir := "resources/views"
-
-		flies, err := filepath.Glob(viewDir+"/layouts/*.tpl")
-		if err != nil {
-			logger.LogError(err)
-		}
-
-		newFlies := append(flies, viewDir+"/articles/show.tpl")
-
-		tmpl, err := template.New("show.tpl").
-			Funcs(template.FuncMap{
-				"RouteName2URL": route.Name2URL,
-				"Int64ToString": types.Int64ToString,
-			}).ParseFiles(newFlies...)
-		logger.LogError(err)
-
-		tmpl.ExecuteTemplate(w, "app", article)
+		view.Render(w, "articles.show", article)
 
 	}
 
@@ -89,22 +71,7 @@ func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "500 服务器内部错误")
 	} else {
-
-		viewDir := "resources/views"
-
-		// 2.1 所有布局模板文件 Slice
-		files, err := filepath.Glob(viewDir + "/layouts/*.tpl")
-		logger.LogError(err)
-
-		// 2.2 在 Slice 里新增我们的目标文件
-		newFiles := append(files, viewDir+"/articles/index.tpl")
-
-		// 2.3 解析模板文件
-		tmpl, err := template.ParseFiles(newFiles...)
-		logger.LogError(err)
-
-		// 2.4 渲染模板，将所有文章的数据传输进去
-		tmpl.ExecuteTemplate(w, "app", articles)
+		view.Render(w, "articles.index", articles)
 	}
 
 }
@@ -139,7 +106,7 @@ func (ac *ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 		}
 		_article.Create()
 		if _article.ID > 0 {
-			fmt.Fprint(w, "插入成功，ID 为"+strconv.FormatInt(_article.ID, 10))
+			fmt.Fprint(w, "插入成功，ID 为"+_article.GetStringID())
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
 			fmt.Fprint(w, "创建文章失败，请联系管理员")
