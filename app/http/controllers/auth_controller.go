@@ -41,6 +41,7 @@ func (*AuthController) DoRegister(w http.ResponseWriter, r *http.Request) {
 		_user.Create()
 
 		if _user.ID > 0 {
+			auth.Login(_user)
 			http.Redirect(w, r, "/", http.StatusFound)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -48,7 +49,6 @@ func (*AuthController) DoRegister(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// 3. 表单不通过 —— 重新显示表单
 }
 
 func (*AuthController) Login(w http.ResponseWriter, r *http.Request) {
