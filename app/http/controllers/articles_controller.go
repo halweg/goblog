@@ -60,13 +60,12 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
-
 	articles, err := article.GetAll()
 	if err != nil {
 
 		logger.LogError(err)
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, "500 服务器内部错误")
+		fmt.Fprint(w, "500 服务器内部错误!")
 	} else {
 		view.Render(w, view.D{
     "Articles": articles,

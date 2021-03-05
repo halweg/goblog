@@ -1,23 +1,49 @@
 package model
 
 import (
+	"fmt"
+	"goblog/pkg/config"
 	"goblog/pkg/logger"
-	"goblog/pkg/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
 func ConnectDB() *gorm.DB {
-	
+
 	var err error
-	
-	config := mysql.New(mysql.Config{
-		DSN: "go_blog:go_blog123@tcp(127.0.0.1:3306)/go_blog?charset=utf8&parseTime=True&loc=Local",
+
+	// 初始化 MySQL 连接信息
+	var (
+		host     = config.GetString("database.mysql.host")
+		port     = config.GetString("database.mysql.port")
+		database = config.GetString("database.mysql.database")
+		username = config.GetString("database.mysql.username")
+		password = config.GetString("database.mysql.password")
+		charset  = config.GetString("database.mysql.charset")
+	)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s&parseTime=%t&loc=%s",
+		username, password, host, port, database, charset, true, "Local")
+
+	gormConfig := mysql.New(mysql.Config{
+		DSN: dsn,
 	})
 
-	DB, err := gorm.Open(config, &gorm.Config{})
+	var level gormlogger.LogLevel
+	if config.GetBool("app.debug") {
+		// 读取不到数据也会显示
+		level = gormlogger.Warn
+	} else {
+		// 只有错误才会显示
+		level = gormlogger.Error
+	}
+
+	// 准备数据库连接池
+	DB, err = gorm.Open(gormConfig, &gorm.Config{
+		Logger: gormlogger.Default.LogMode(level),
+	})
 
 	logger.LogError(err)
 
@@ -25,11 +51,3 @@ func ConnectDB() *gorm.DB {
 	
 }
 
-type BaseModel struct {
-	ID uint64
-}
-
-// GetStringID 获取 ID 的字符串格式
-func (a BaseModel) GetStringID() string {
-	return types.Uint64ToString(a.ID)
-}
