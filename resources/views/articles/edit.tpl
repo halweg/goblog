@@ -10,13 +10,13 @@
 
         <form action="{{ RouteName2URL "articles.update" "id" .Article.GetStringID }}" method="post">
 
-        {{template "form-fields" . }}
+        {{ template "form-fields" . }}
 
         <button type="submit" class="btn btn-primary mt-3">更新</button>
 
         </form>
 
-    </div>
+    </div><!-- /.blog-post -->
 </div>
 
 {{end}}

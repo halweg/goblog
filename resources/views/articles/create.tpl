@@ -10,7 +10,7 @@
 
         <form action="{{ RouteName2URL "articles.store" }}" method="post">
 
-        {{ template "_form_field" . }}
+        {{ template "form-fields" . }}
 
         <button type="submit" class="btn btn-primary mt-3">提交</button>
 
