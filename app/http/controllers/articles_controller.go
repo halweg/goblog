@@ -4,6 +4,7 @@ import (
     "fmt"
     "goblog/app/models/article"
     "goblog/app/requests"
+    "goblog/pkg/auth"
     "goblog/pkg/logger"
     "goblog/pkg/route"
     "goblog/pkg/view"
@@ -35,8 +36,9 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "服务器内部错误!")
 		}
 	} else {
-		view.Render(w, view.D{"Article": article}, "articles.show" )
-	}
+        view.Render(w, view.D{
+            "Article": article,
+        }, "articles.show", "articles._article_meta")	}
 
 }
 
@@ -48,9 +50,9 @@ func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprint(w, "500 服务器内部错误!")
 	} else {
-		view.Render(w, view.D{
-    "Articles": articles,
-}, "articles.index")
+        view.Render(w, view.D{
+            "Articles": articles,
+        }, "articles.index", "articles._article_meta")
 	}
 
 }
@@ -61,32 +63,34 @@ func (ac *ArticlesController) Create(w http.ResponseWriter, r *http.Request) {
 
 func (ac *ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
 
-	// 1. 初始化数据
-	_article := article.Article{
-		Title: r.PostFormValue("title"),
-		Body:  r.PostFormValue("body"),
-	}
+    currentUser := auth.User()
+    // 1. 初始化数据
+    _article := article.Article{
+        Title: r.PostFormValue("title"),
+        Body:  r.PostFormValue("body"),
+        UserID: currentUser.ID,
+    }
 
-	// 2. 表单验证
-	errors := requests.ValidateArticleForm(_article)
+    // 2. 表单验证
+    errors := requests.ValidateArticleForm(_article)
 
-	// 3. 检测错误
-	if len(errors) == 0 {
-		// 创建文章
-		_article.Create()
-		if _article.ID > 0 {
-			indexURL := route.Name2URL("articles.show", "id", _article.GetStringID())
-			http.Redirect(w, r, indexURL, http.StatusFound)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, "创建文章失败，请联系管理员")
-		}
-	} else {
-		view.Render(w, view.D{
-			"Article": _article,
-			"Errors":  errors,
-		}, "articles.create", "articles._form_field")
-	}
+    // 3. 检测错误
+    if len(errors) == 0 {
+        // 创建文章
+        _article.Create()
+        if _article.ID > 0 {
+            indexURL := route.Name2URL("articles.show", "id", _article.GetStringID())
+            http.Redirect(w, r, indexURL, http.StatusFound)
+        } else {
+            w.WriteHeader(http.StatusInternalServerError)
+            fmt.Fprint(w, "创建文章失败，请联系管理员")
+        }
+    } else {
+        view.Render(w, view.D{
+            "Article": _article,
+            "Errors":  errors,
+        }, "articles.create", "articles._form_field")
+    }
 }
 
 func (ac *ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {

@@ -3,6 +3,7 @@ package user
 import (
 	"goblog/app/models"
 	"goblog/pkg/password"
+    "goblog/pkg/route"
 )
 
 // User 用户模型
@@ -18,4 +19,8 @@ type User struct {
 
 func (u User) ComparePassword(_password string) bool {
 	return password.CheckHash(_password, u.Password)
+}
+
+func (u User) Link() string {
+    return route.Name2URL("users.show", "id", u.GetStringID())
 }
