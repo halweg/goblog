@@ -27,9 +27,10 @@
         <h5>链接</h5>
         <ol class="list-unstyled">
             <li><a href="#">关于我们</a></li>
-            <li><a href="#">注册</a></li>
+            <li><a href="{{ RouteName2URL "auth.register" }}">注册</a></li>
             <li><a href="#">登录</a></li>
         </ol>
     </div>
+
 </div>
 {{end}}
