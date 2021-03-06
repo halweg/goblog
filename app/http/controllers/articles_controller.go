@@ -6,15 +6,13 @@ import (
     "goblog/app/policies"
     "goblog/app/requests"
     "goblog/pkg/auth"
-    "goblog/pkg/flash"
-    "goblog/pkg/logger"
     "goblog/pkg/route"
     "goblog/pkg/view"
-    "gorm.io/gorm"
     "net/http"
 )
 
 type ArticlesController struct {
+    BaseController
 }
 
 type ArticlesFormData struct {
@@ -29,14 +27,7 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 	article, err := article.Get(id)
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, "404 文章未找到")
-		} else {
-			logger.LogError(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, "服务器内部错误!")
-		}
+		ac.ResponseForSQLError(w, err)
 	} else {
         view.Render(w, view.D{
             "Article": article,
@@ -46,17 +37,19 @@ func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
-	articles, err := article.GetAll()
-	if err != nil {
 
-		logger.LogError(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Fprint(w, "500 服务器内部错误!")
-	} else {
+    articles, pagerData, err := article.GetAll(r, 2)
+
+    if err != nil {
+        ac.ResponseForSQLError(w, err)
+    } else {
+
+        // ---  2. 加载模板 ---
         view.Render(w, view.D{
-            "Articles": articles,
+            "Articles":  articles,
+            "PagerData": pagerData,
         }, "articles.index", "articles._article_meta")
-	}
+    }
 
 }
 
@@ -105,21 +98,11 @@ func (ac *ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
 
 	// 3. 如果出现错误
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			// 3.1 数据未找到
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, "404 文章未找到")
-		} else {
-			// 3.2 数据库错误
-			logger.LogError(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, "500 服务器内部错误")
-		}
+		ac.ResponseForSQLError(w, err)
 	} else {
         // 检查权限
         if !policies.CanModifyArticle(_article) {
-            flash.Warning("未授权操作！")
-            http.Redirect(w, r, "/", http.StatusFound)
+            ac.ResponseForUnauthorized(w, r)
         } else {
             // 4. 读取成功，显示编辑文章表单
             view.Render(w, view.D{
@@ -138,19 +121,11 @@ func (ac *ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 	_article, err := article.Get(id)
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, "404 文章未找到")
-		} else {
-			logger.LogError(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, "服务器内部错误！")
-		}
+		ac.ResponseForSQLError(w, err)
 	} else {
 
 	    if !policies.CanModifyArticle(_article) {
-            flash.Warning("未授权操作！")
-            http.Redirect(w, r, "/", http.StatusForbidden)
+            ac.ResponseForUnauthorized(w, r)
         } else {
 
             // 4.1 表单验证
@@ -196,18 +171,11 @@ func (ac *ArticlesController) Delete(w http.ResponseWriter, r *http.Request) {
     _article, err := article.Get(id)
 
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, "文章未找到")
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprint(w, "服务器内部错误")
-		}
+		ac.ResponseForSQLError(w, err)
 	} else {
 
         if !policies.CanModifyArticle(_article) {
-            flash.Warning("您没有权限执行此操作！")
-            http.Redirect(w, r, "/", http.StatusFound)
+            ac.ResponseForUnauthorized(w, r)
         } else {
             // 4. 未出现错误，执行删除操作
             rowsAffected, err := _article.Delete()
