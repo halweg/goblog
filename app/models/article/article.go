@@ -13,6 +13,8 @@ type Article struct {
     User   user.User
     Title string `valid:"title"`
     Body string `valid:"body"`
+
+    CategoryID uint64 `gorm:"not null;default:3;index"`
 }
 
 func (a Article) Link() string {
