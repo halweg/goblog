@@ -1,7 +1,9 @@
 {{define "sidebar"}}
 <div class="col-md-3 blog-sidebar">
     <div class="p-4 mb-3 bg-white rounded shadow-sm">
-        <h1>GoBlog</h1>
+        <h1>
+            <a href="/">GoBlog</a>
+        </h1>
         <p class="mb-0">无框goLang架版</p>
     </div>
 
