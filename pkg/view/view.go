@@ -1,7 +1,8 @@
 package view
 
 import (
-	"goblog/pkg/auth"
+    "goblog/app/models/category"
+    "goblog/pkg/auth"
 	"goblog/pkg/flash"
 	"goblog/pkg/logger"
 	"goblog/pkg/route"
@@ -27,11 +28,13 @@ func RenderSimple(w io.Writer, data D, tplFiles ...string) {
 func RenderTemplate(w io.Writer, name string, data D, tplFiles ...string) {
 
 	// 1. 通用模板数据
-	data["isLogined"] = auth.Check()
+    var err error
+    data["isLogined"] = auth.Check()
 	data["flash"]     = flash.All()
 	data["loginUser"] = auth.User
+    data["Categories"], err = category.All()
 
-	// 2. 生成模板文件
+    // 2. 生成模板文件
 	allFiles := getTemplateFiles(tplFiles...)
 
 	// 3. 解析所有模板文件
