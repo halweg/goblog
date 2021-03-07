@@ -14,7 +14,7 @@
     <div class="form-group">
         <select class="form-control" id="category" name="category_id">
             {{ $articleCID := .Article.Category.ID }}
-            {{ range $cat := .Category }}
+            {{ range $cat := .Categories }}
                 {{ if $articleCID }}
                     <option value="{{ $cat.ID }}" {{ if eq $cat.ID $articleCID }}selected="selected"{{ end }}> {{ $cat.Name }}  </option>
                     {{ else }}

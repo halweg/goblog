@@ -25,6 +25,7 @@ type ArticlesFormData struct {
 }
 
 func (ac *ArticlesController) Show(w http.ResponseWriter, r *http.Request) {
+
 	id := route.GetRouteVariable("id", r)
 
 	article, err := article.Get(id)
@@ -57,12 +58,7 @@ func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *ArticlesController) Create(w http.ResponseWriter, r *http.Request) {
-	_category, err := category.All()
-	if err != nil {
-		ac.ResponseForSQLError(w, err)
-	}
 	view.Render(w, view.D{
-		"Category":  _category,
 	},"articles.create", "articles._form_field")
 }
 
@@ -116,7 +112,6 @@ func (ac *ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
 
 	// 2. 读取对应的文章数据
 	_article, err := article.Get(id)
-	_category, err :=  category.All()
 
 	// 3. 如果出现错误
 	if err != nil {
@@ -130,7 +125,6 @@ func (ac *ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
             view.Render(w, view.D{
                 "Article": _article,
                 "Errors":  view.D{},
-                "Category":  _category,
             }, "articles.edit", "articles._form_field")
         }
 	}
