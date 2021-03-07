@@ -1,11 +1,11 @@
 package controllers
 
 import (
-    "fmt"
-    "goblog/pkg/flash"
-    "goblog/pkg/logger"
-    "gorm.io/gorm"
-    "net/http"
+	"goblog/pkg/flash"
+	"goblog/pkg/logger"
+	"goblog/pkg/view"
+	"gorm.io/gorm"
+	"net/http"
 )
 
 type BaseController struct {
@@ -13,12 +13,23 @@ type BaseController struct {
 
 func (bc *BaseController) ResponseForSQLError(w http.ResponseWriter, err error) {
     if err == gorm.ErrRecordNotFound {
-        w.WriteHeader(http.StatusNotFound)
-        fmt.Fprint(w, "404 文章未找到")
+		logger.LogError(err)
+		w.WriteHeader(http.StatusNotFound)
+        view.Render(w,view.D{
+        	"Title" : "资源不存在",
+        	"Info" : "文章不存在",
+        	"Message" : "it`s is a sad message...",
+		},
+        "errors.404")
     } else {
         logger.LogError(err)
         w.WriteHeader(http.StatusInternalServerError)
-        fmt.Fprint(w, "服务器内部错误!")
+		view.Render(w,view.D{
+			"Title" : "服务器出错了",
+			"Info" : "服务器内部发生错误",
+			"Message" : "it`s is a sad message...",
+		},
+			"errors.500")
     }
 }
 

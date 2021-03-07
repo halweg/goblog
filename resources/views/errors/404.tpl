@@ -1,8 +1,9 @@
 {{define "title"}}
-{{ .Title }}
+    {{ .Title }}
 {{end}}
 
 {{define "main"}}
+
 <div class="col-md-9 blog-main">
     <div class="blog-post bg-white p-5 rounded shadow mb-4">
 

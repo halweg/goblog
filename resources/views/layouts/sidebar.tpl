@@ -4,7 +4,7 @@
         <h1>
             <a href="/">GoBlog</a>
         </h1>
-        <p class="mb-0">无框goLang架版</p>
+        <p class="mb-0">无框架，更轻量</p>
     </div>
 
     <div class="p-4 bg-white rounded shadow-sm mb-3">
