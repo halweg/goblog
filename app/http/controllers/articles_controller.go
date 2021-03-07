@@ -1,14 +1,17 @@
 package controllers
 
 import (
-    "fmt"
-    "goblog/app/models/article"
-    "goblog/app/policies"
-    "goblog/app/requests"
-    "goblog/pkg/auth"
-    "goblog/pkg/route"
-    "goblog/pkg/view"
-    "net/http"
+	"fmt"
+	"goblog/app/models/article"
+	"goblog/app/models/category"
+	"goblog/app/policies"
+	"goblog/app/requests"
+	"goblog/pkg/auth"
+	"goblog/pkg/logger"
+	"goblog/pkg/route"
+	"goblog/pkg/view"
+	"gorm.io/gorm"
+	"net/http"
 )
 
 type ArticlesController struct {
@@ -54,17 +57,35 @@ func (ac *ArticlesController) Index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (ac *ArticlesController) Create(w http.ResponseWriter, r *http.Request) {
-	view.Render(w, view.D{}, "articles.create", "articles._form_field")
+	_category, err := category.All()
+	if err != nil {
+		ac.ResponseForSQLError(w, err)
+	}
+	view.Render(w, view.D{
+		"Category":  _category,
+	},"articles.create", "articles._form_field")
 }
 
 func (ac *ArticlesController) Store(w http.ResponseWriter, r *http.Request) {
+	_category, err := category.Get(r.PostFormValue("category_id"))
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			fmt.Fprint(w, "404 分类不存在")
+		} else {
+			logger.LogError(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprint(w, "服务器内部错误!")
+		}
+	}
 
     currentUser := auth.User()
     // 1. 初始化数据
     _article := article.Article{
         Title: r.PostFormValue("title"),
         Body:  r.PostFormValue("body"),
-        UserID: currentUser.ID,
+        CategoryID: _category.ID,
+		UserID: currentUser.ID,
     }
 
     // 2. 表单验证
@@ -95,6 +116,7 @@ func (ac *ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
 
 	// 2. 读取对应的文章数据
 	_article, err := article.Get(id)
+	_category, err :=  category.All()
 
 	// 3. 如果出现错误
 	if err != nil {
@@ -108,6 +130,7 @@ func (ac *ArticlesController) Edit(w http.ResponseWriter, r *http.Request) {
             view.Render(w, view.D{
                 "Article": _article,
                 "Errors":  view.D{},
+                "Category":  _category,
             }, "articles.edit", "articles._form_field")
         }
 	}
@@ -118,7 +141,8 @@ func (ac *ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
 	id := route.GetRouteVariable("id", r)
 
 	// 2. 读取对应的文章数据
-	_article, err := article.Get(id)
+	_article, err := article.Find(id)
+	_category, _ := category.Get(r.PostFormValue("category_id"))
 
 	if err != nil {
 		ac.ResponseForSQLError(w, err)
@@ -131,12 +155,13 @@ func (ac *ArticlesController) Update(w http.ResponseWriter, r *http.Request) {
             // 4.1 表单验证
             _article.Title = r.PostFormValue("title")
             _article.Body = r.PostFormValue("body")
-
+            _article.CategoryID =  _category.ID
             errors := requests.ValidateArticleForm(_article)
 
             if len(errors) == 0 {
 
                 // 4.2 表单验证通过，更新数据
+
                 rowsAffected, err := _article.Update()
 
                 if err != nil {

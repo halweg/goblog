@@ -2,19 +2,22 @@ package article
 
 import (
 	"goblog/app/models"
-    "goblog/app/models/user"
-    "goblog/pkg/route"
+	"goblog/app/models/category"
+	"goblog/app/models/user"
+	"goblog/pkg/route"
 )
 
 type Article struct {
 
 	models.BaseModel
     UserID uint64 `gorm:"not null;index"`
-    User   user.User
+
     Title string `valid:"title"`
     Body string `valid:"body"`
+	CategoryID uint64 `gorm:"not null;default:4;index"`
 
-    CategoryID uint64 `gorm:"not null;default:3;index"`
+	User   user.User
+	Category category.Category
 }
 
 func (a Article) Link() string {
