@@ -32,3 +32,8 @@ func GetRouteVariable(parameterName string, r *http.Request) string {
 	return vars[parameterName]
 }
 
+func URL(path string) string {
+	baseURL := config.GetString("app.url")
+	return baseURL + path
+}
+

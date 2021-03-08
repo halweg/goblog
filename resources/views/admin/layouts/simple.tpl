@@ -10,7 +10,7 @@
     <title>{{template "title" .}}</title>
 
     <link href="/css/admin/bootstrap.min.css" rel="stylesheet">
-    <link href="/css/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="/css/admin/font-awesome/css/font-awesome.css" rel="stylesheet">
 
     <link href="/css/admin/animate.css" rel="stylesheet">
     <link href="/css/admin/style.css" rel="stylesheet">

@@ -13,4 +13,7 @@ func RegisterAdminRoutes(r *mux.Router)  {
 	adminRoutes.HandleFunc("/auth/login", auc.Login).Methods("GET").Name("admin.auth.login")
 
 
+	dashController := new(admin_controllers.DashboardController)
+	adminRoutes.HandleFunc("/dash-board/layout", dashController.Layout).Methods("GET").Name("admin.dash-board.layout")
+
 }
