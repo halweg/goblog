@@ -9,7 +9,10 @@ import (
 func SetupRoute() *mux.Router {
 	r := mux.NewRouter()
 	routes.RegisterWebRoutes(r)
+	routes.RegisterAdminRoutes(r)
+
 	route.SetRoute(r)
+
 
 	return r
 }
