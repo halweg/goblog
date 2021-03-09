@@ -26,7 +26,10 @@
 <body class="gray-bg">
 
 <div class="main animated fadeInDown">
-    {{template "main" .}}
+
+    {{template "messages" .}}
+
+    {{ template "main" .}}
     <hr/>
     <div class="row">
         <div class="col-md-6">
@@ -37,7 +40,8 @@
         </div>
     </div>
 </div>
-
+<script src="/js/admin/jquery-2.1.1.js"></script>
+<script src="/js/admin/bootstrap.min.js"></script>
 </body>
 
 </html>

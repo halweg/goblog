@@ -1,7 +1,8 @@
 package admin_view
 
 import (
-	"goblog/pkg/logger"
+    "goblog/pkg/flash"
+    "goblog/pkg/logger"
 	"goblog/pkg/route"
 	"html/template"
 	"io"
@@ -26,6 +27,7 @@ func RenderTemplate(w io.Writer, name string, data D, tplFiles ...string) {
 
 	// 1. 通用模板数据
 	var err error
+    data["flash"]     = flash.All()
 
 	// 2. 生成模板文件
 	allFiles := getTemplateFiles(tplFiles...)

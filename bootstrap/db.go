@@ -1,7 +1,8 @@
 package bootstrap
 
 import (
-	"goblog/app/models/article"
+    "goblog/app/models/admin"
+    "goblog/app/models/article"
     "goblog/app/models/category"
     "goblog/app/models/user"
 	"goblog/pkg/config"
@@ -33,6 +34,7 @@ func migration(db *gorm.DB) {
 		&user.User{},
 		&article.Article{},
         &category.Category{},
+        &admin.User{},
 	)
 }
 

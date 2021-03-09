@@ -3,6 +3,6 @@
 {{end}}
 {{ define "main" }}
 <div class="wrapper wrapper-content animated fadeInRight">
-    
+
 </div>
 {{ end }}

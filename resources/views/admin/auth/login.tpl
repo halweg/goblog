@@ -3,6 +3,7 @@
 {{end}}
 
 {{define "main"}}
+
 <div class="row">
 
     <div class="col-md-6">
@@ -25,12 +26,15 @@
     </div>
     <div class="col-md-6">
         <div class="ibox-content">
-            <form class="m-t" role="form" action="index.html">
-                <div class="form-group">
-                    <input type="email" class="form-control" placeholder="登录账户" required="">
+            <form class="m-t" role="form" method="POST" action="{{ RouteName2URL "admin.auth.dologin" }}">
+                <div class="form-group error">
+                    <input type="text" class="form-control  {{if .Error }} error {{end}}   " placeholder="登录账户" required="" name="username">
+                    {{ with .Error }}
+                    <label  class="error">{{ . }}</label>
+                    {{ end }}
                 </div>
                 <div class="form-group">
-                    <input type="password" class="form-control" placeholder="密码" required="">
+                    <input type="password" class="form-control" placeholder="密码" required="" name="password">
                 </div>
                 <button type="submit" class="btn btn-primary block full-width m-b">登录</button>
 
@@ -41,7 +45,7 @@
                 <p class="text-muted text-center">
                     <small>还没有账号?</small>
                 </p>
-                <a class="btn btn-sm btn-white btn-block" href="register.html">注册</a>
+                <a class="btn btn-sm btn-white btn-block" href="#">注册</a>
             </form>
         </div>
     </div>

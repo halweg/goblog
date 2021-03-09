@@ -1,8 +1,8 @@
 package admin_controllers
 
 import (
-	"goblog/pkg/view/admin_view"
-	"net/http"
+    "goblog/pkg/view/admin_view"
+    "net/http"
 )
 
 type DashboardController struct {
