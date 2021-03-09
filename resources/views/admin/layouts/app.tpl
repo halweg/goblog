@@ -8,6 +8,7 @@
     <title>{{template "title" .}}</title>
     <link href="/css/admin/bootstrap.min.css" rel="stylesheet">
     <link href="/css/admin/font-awesome/css/font-awesome.css" rel="stylesheet">
+    <link href="/css/plugins/toastr/toastr.min.css" rel="stylesheet">
     <link href="/css/admin/animate.css" rel="stylesheet">
     <link href="/css/admin/style.css" rel="stylesheet">
 </head>
@@ -19,6 +20,9 @@
     {{ template "slider" . }}
 
     <div id="page-wrapper" class="gray-bg">
+
+        {{ template "messages" . }}
+
         {{ template "nav" . }}
 
         {{ template "breadcrumb" . }}
@@ -30,17 +34,15 @@
     </div>
 </div>
 
-
-
-<!-- Mainly scripts -->
 <script src="/js/admin/jquery-2.1.1.js"></script>
 <script src="/js/admin/bootstrap.min.js"></script>
 <script src="/js/admin/plugins/metisMenu/jquery.metisMenu.js"></script>
 <script src="/js/admin/plugins/slimscroll/jquery.slimscroll.min.js"></script>
 
-<!-- Custom and plugin javascript -->
 <script src="/js/admin/inspinia.js"></script>
 <script src="/js/admin/plugins/pace/pace.min.js"></script>
+
+<script src="/js/plugins/toastr/toastr.min.js"></script>
 
 </body>
 
