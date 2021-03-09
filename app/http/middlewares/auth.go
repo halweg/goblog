@@ -27,6 +27,7 @@ func AdminAuth(next http.Handler) http.Handler  {
         if !auth_admin.Check() {
             flash.Warning("请先登录！")
             http.Redirect(w, r, "/admin/auth/login", http.StatusFound)
+            return
         }
         next.ServeHTTP(w, r)
     })

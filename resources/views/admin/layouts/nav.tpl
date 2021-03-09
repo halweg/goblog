@@ -109,7 +109,7 @@
 
 
             <li>
-                <a href="#">
+                <a href="{{ RouteName2URL "admin.auth.logout" }}">
                     <i class="fa fa-sign-out"></i> 登出
                 </a>
             </li>

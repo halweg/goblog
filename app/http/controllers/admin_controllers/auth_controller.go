@@ -2,6 +2,7 @@ package admin_controllers
 
 import (
     "goblog/pkg/auth_admin"
+    "goblog/pkg/flash"
     "goblog/pkg/view/admin_view"
     "net/http"
 )
@@ -21,7 +22,7 @@ func (*AuthController) DoLogin(w http.ResponseWriter, r *http.Request){
     // 2. 尝试登录
     if err := auth_admin.Attempt(username, password); err == nil {
         // 登录成功
-        //flash.Success("欢迎回来！")
+        flash.Success("欢迎回来！")
         http.Redirect(w, r, "/admin/dash-board/layout", http.StatusFound)
     } else {
         // 3. 失败，显示错误提示
@@ -31,4 +32,10 @@ func (*AuthController) DoLogin(w http.ResponseWriter, r *http.Request){
             "Password": password,
         }, "auth.login")
     }
+}
+
+func (*AuthController) Logout(w http.ResponseWriter, r *http.Request) {
+    auth_admin.Logout()
+    flash.Success("你已成功退出！")
+    http.Redirect(w, r, "/admin/auth/login", http.StatusFound)
 }

@@ -12,6 +12,7 @@ func RegisterAdminRoutes(r *mux.Router)  {
 	auc := new(admin_controllers.AuthController)
 	r.HandleFunc("/admin/auth/login", auc.Login).Methods("GET").Name("admin.auth.login")
 	r.HandleFunc("/admin/auth/do-login", auc.DoLogin).Methods("POST").Name("admin.auth.dologin")
+	r.HandleFunc("/admin/auth/logout", auc.Logout).Methods("GET").Name("admin.auth.logout")
 
     adminRoutes := r.PathPrefix("/admin").Subrouter()
     adminRoutes.Use(middlewares.AdminAuth)
