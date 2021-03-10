@@ -8,9 +8,9 @@
     <title>{{template "title" .}}</title>
     <link href="/css/admin/bootstrap.min.css" rel="stylesheet">
     <link href="/css/admin/font-awesome/css/font-awesome.css" rel="stylesheet">
-    <link href="/css/plugins/toastr/toastr.min.css" rel="stylesheet">
     <link href="/css/admin/animate.css" rel="stylesheet">
     <link href="/css/admin/style.css" rel="stylesheet">
+    {{ template "style" . }}
 </head>
 
 <body>
@@ -42,7 +42,7 @@
 <script src="/js/admin/inspinia.js"></script>
 <script src="/js/admin/plugins/pace/pace.min.js"></script>
 
-<script src="/js/plugins/toastr/toastr.min.js"></script>
+{{ template "script" . }}
 
 </body>
 
